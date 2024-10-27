@@ -1,74 +1,63 @@
 #include <iostream>
 #include <vector>
-#include <string>
 
 using namespace std;
 
-// Ternary Search Algorithm
-int Search(const vector<string>& playlist, const string& song, int left, int right) {
-    if (left > right) {
-        return -1; // Song not found
+// Function to find the best disk for a given file
+int findBestDisk(const vector<int>& t, int fileSize, int m) {
+    int bestDisk = -1;
+    int maxSpace = -1;
+
+    // Iterate through each disk
+    for (int j = 0; j < m; ++j) {
+        // Check if the disk can hold the file and has the most available space so far
+        if (t[j] >= fileSize && t[j] > maxSpace) {
+            bestDisk = j;
+            maxSpace = t[j];
+        }
     }
 
-    // Divide the list into three parts
-    int mid1 = left + (right - left) / 3;
-    int mid2 = right - (right - left) / 3;
-
-    // Check the first mid-point
-    if (playlist[mid1] == song) {
-        return mid1;
-    }
-
-    // Check the second mid-point
-    if (playlist[mid2] == song) {
-        return mid2;
-    }
-
-    // If the song is in the first third of the list
-    if (song < playlist[mid1]) {
-        return Search(playlist, song, left, mid1 - 1);
-    }
-    // If the song is in the last third of the list
-    else if (song > playlist[mid2]) {
-        return Search(playlist, song, mid2 + 1, right);
-    }
-    // Search in the middle third
-    else {
-        return Search(playlist, song, mid1 + 1, mid2 - 1);
-    }
+    return bestDisk;
 }
 
-// Wrapper function to start the search
-int searchSong(const vector<string>& playlist, const string& song) {
-    return Search(playlist, song, 0, playlist.size() - 1);
+// Greedy file storage algorithm
+vector<int> greedyFileStorage(int n, const vector<int>& s, int m, vector<int>& t) {
+    vector<int> map(n, -1);  // To store the mapping of files to disks (-1 means not assigned)
+
+    // Iterate over each file
+    for (int i = 0; i < n; ++i) {
+        int bestDisk = findBestDisk(t, s[i], m);
+
+        // If a valid disk is found, assign the file to that disk
+        if (bestDisk != -1) {
+            map[i] = bestDisk;  // Store the disk index in map
+            t[bestDisk] -= s[i]; // Reduce the remaining space on that disk
+        } else {
+            // If no valid disk is found, print an error and return empty
+            cout << "Error: No disk found with enough space for file " << i + 1 << endl;
+            return {};
+        }
+    }
+
+    return map;  // Return the mapping of files to disks
 }
 
 int main() {
-    vector<string> playlist = {
-        "A Day in the Life", "Aqualung", "Baba O'Riley", "Back in Black", "Bad Moon Rising", 
-        "Barracuda", "Black Dog", "Born to Be Wild", "Boys Are Back in Town", "Break on Through", 
-        "Brown Eyed Girl", "Carry On Wayward Son", "China Grove", "Comfortably Numb", "Come Together", 
-        "Crossroads", "Desperado", "Don't Stop Believin'", "Dream On", "Fortunate Son", 
-        "Free Bird", "Gimme Shelter", "Heartbreaker", "Hotel California", "I Can't Get No Satisfaction", 
-        "Immigrant Song", "Jump", "La Grange", "Let It Be", "Life in the Fast Lane", 
-        "Light My Fire", "Livin' on a Prayer", "Long Train Runnin'", "Maggie May", "Magic Carpet Ride", 
-        "More Than a Feeling", "Night Moves", "Paint It Black", "Paranoid", "Purple Haze", 
-        "Radar Love", "Rebel Rebel", "Rock and Roll", "Runnin' Down a Dream", "Smoke on the Water", 
-        "Space Oddity", "Stairway to Heaven", "Sweet Child O' Mine", "Takin' Care of Business", "The Chain", 
-        "The Joker", "Tom Sawyer", "Twist and Shout", "Under Pressure", "Wish You Were Here", 
-        "You Really Got Me"
-    };
+    int n = 4;  // Number of files
+    vector<int> s = {200, 500, 300, 150};  // File sizes in MB
 
-    // Song to search for
-    string song = "Hotel California";
+    int m = 3;  // Number of disks
+    vector<int> t = {600, 700, 300};  // Disk storage capacities in MB
 
-    // Perform the search
-    int index = searchSong(playlist, song);
+    // Perform greedy file storage
+    vector<int> map = greedyFileStorage(n, s, m, t);
 
-    if (index != -1) {
-        cout << "Song found at index: " << index << endl;
-    } else {
-        cout << "Song not found in the playlist." << endl;
+    // Check if a valid mapping was returned
+    if (!map.empty()) {
+        cout << "File to disk mapping (0-based index):" << endl;
+        for (int i = 0; i < n; ++i) {
+            cout << "File " << i + 1 << " -> Disk " << map[i] << endl;
+        }
     }
 
     return 0;

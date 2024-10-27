@@ -1,0 +1,38 @@
+# Inputs:
+# n: number of files
+
+# s[1..n]: array of file sizes
+
+# m: number of disks
+# t[1..m]: array of disk capacities
+
+# Output:
+# map[1..n]: array where map[i] contains the index of the disk to store file i
+
+function greedy_file_storage(n, s, m, t):
+    # Initialize the map array with -1 to indicate no file has been mapped yet
+    map[1..n] = [-1] * n  # Initially, no file is mapped to any disk
+
+    # Iterate through each file
+    for i = 1 to n:
+        best_disk = -1  # This will store the index of the best disk for the current file
+        max_space = -1   # This will store the maximum remaining space found
+
+        # Iterate through each disk to find the one with the most available space that can fit the file
+        for j = 1 to m:
+            if t[j] >= s[i] and t[j] > max_space:  # Disk j can hold the file and has more space than the current best
+                best_disk = j
+                max_space = t[j]  # Update the max_space to the space available on this disk
+
+        # If a valid disk was found, store the file on this disk
+        if best_disk != -1:
+            map[i] = best_disk   # Assign the file to the best disk
+            t[best_disk] -= s[i] # Decrease the available space on that disk
+
+        # If no valid disk is found, print an error (or handle the error as needed)
+        else:
+            print("Error: No disk found with enough space for file", i)
+            return None
+
+    # Return the mapping array
+    return map
